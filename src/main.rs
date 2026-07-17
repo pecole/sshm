@@ -111,8 +111,9 @@ fn prompt_entry(theme: &ColorfulTheme, base: Option<&HostEntry>) -> Result<HostE
         .allow_empty(true)
         .interact_text()?;
     let port: String = Input::with_theme(theme)
-        .with_prompt("Port")
-        .with_initial_text(base.and_then(|b| b.port).unwrap_or(22).to_string())
+        .with_prompt("Port (empty for default 22)")
+        .with_initial_text(base.and_then(|b| b.port).map(|p| p.to_string()).unwrap_or_default())
+        .allow_empty(true)
         .interact_text()?;
     let identity: String = Input::with_theme(theme)
         .with_prompt("IdentityFile (empty to skip)")
@@ -120,12 +121,24 @@ fn prompt_entry(theme: &ColorfulTheme, base: Option<&HostEntry>) -> Result<HostE
         .allow_empty(true)
         .interact_text()?;
 
+    let alias = alias.trim().to_string();
+    if alias.is_empty() {
+        bail!("alias is required");
+    }
+    if alias.chars().any(char::is_whitespace) {
+        bail!("alias must not contain whitespace");
+    }
+    let port = match port.trim() {
+        "" => None,
+        p => Some(p.parse::<u16>().with_context(|| format!("invalid port '{}'", p))?),
+    };
+
     let none_if_empty = |s: String| if s.trim().is_empty() { None } else { Some(s.trim().to_string()) };
     Ok(HostEntry {
-        alias: alias.trim().to_string(),
+        alias,
         hostname: none_if_empty(hostname),
         user: none_if_empty(user),
-        port: port.trim().parse::<u16>().ok(),
+        port,
         identity_file: none_if_empty(identity),
     })
 }
@@ -133,9 +146,6 @@ fn prompt_entry(theme: &ColorfulTheme, base: Option<&HostEntry>) -> Result<HostE
 fn add() -> Result<()> {
     let theme = ColorfulTheme::default();
     let entry = prompt_entry(&theme, None)?;
-    if entry.alias.is_empty() {
-        bail!("alias is required");
-    }
     config::add_host(&entry)?;
     println!("✔ added: {}", entry);
     Ok(())
