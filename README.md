@@ -26,3 +26,7 @@ sshm remove [alias] # ホスト削除（確認あり）
 - ワイルドカードHost（`*` など）は一覧から除外（設定ファイル上は保持される）
 - `Host a b c` のように複数エイリアスを持つブロックは、一覧・接続はOKだが edit/remove は安全のため拒否（手動編集を案内）
 - 接続は `exec ssh <alias>` でプロセス置換するので、ssh_config の全オプション（ProxyJump等）がそのまま効く
+
+## ライセンス
+
+MIT License. 詳細は [LICENSE](LICENSE) を参照。

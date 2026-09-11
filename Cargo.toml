@@ -3,6 +3,8 @@ name = "sshm"
 version = "0.1.0"
 edition = "2021"
 description = "SSH connection manager with fuzzy-select TUI"
+license = "MIT"
+repository = "https://github.com/pecole/sshm"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
